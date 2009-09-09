@@ -28,7 +28,11 @@ class OutputCompressionFilter
             StringIO.open('', 'w') do |strio|
               begin
                 gz = Zlib::GzipWriter.new(strio)
-                gz.write(controller.response.body)
+                if controller.response.body.is_a?(Proc)
+                  controller.response.body.call(controller.response, gz)
+                else
+                  gz.write(controller.response.body)
+                end
                 controller.response.body = strio.string
               ensure
                 gz.close if gz
